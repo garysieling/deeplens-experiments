@@ -19,7 +19,7 @@ RUN \
 	make
 
 RUN \
-	wget https://pjreddie.com/media/files/yolov3.weights
+	wget -q https://pjreddie.com/media/files/yolov3.weights
 
 RUN \	
 	cd darknet/ && \
