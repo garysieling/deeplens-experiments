@@ -23,8 +23,6 @@ RUN \
 
 RUN \	
 	cd darknet/ && \
-	./darknet && \
-	./darknet detector test cfg/coco.data cfg/yolo.cfg /root/yolo.weights data/dog.jpg && \
-	./darknet rnn generate cfg/rnn.cfg /root/shakespeare.weights -srand 0 -seed CLEOPATRA -len 300
+	./darknet 
 
 CMD ["bash"]
