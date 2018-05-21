@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+import sys
 
 class SimplePreprocessor:
     def __init__(self, width, height, inter=cv2.INTER_AREA):

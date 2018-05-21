@@ -3,6 +3,8 @@ DIR=`pwd`
 pwd
 ls $DIR
 
-CMD="docker run --rm -e PASSWORD=\"pass\" --mount type=bind,source=$DIR,target=/work --mount type=bind,source=/data,target=/data segaleran/opencv-jupyter ls /work"
+# /var/jenkins_home/workspace/FastTraining/training
+
+CMD="docker run --rm -e PASSWORD="pass" -v jenkins_home:/var/jenkins_home --mount type=bind,source=/data,target=/data segaleran/opencv-jupyter python $DIR/test.py"
 echo $CMD
 `$CMD`
