@@ -1,1 +1,1 @@
-docker run --rm -e PASSWORD="pass" -v /home/admin:/home/jovyan/work --mount type=bind,source=/data,target=/data segaleran/opencv-jupyter python test.py
+docker run --rm -e PASSWORD="pass" -v `pwd`:/home/jovyan/work --mount type=bind,source=/data,target=/data segaleran/opencv-jupyter python /home/jovyan/work/test.py
