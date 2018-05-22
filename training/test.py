@@ -107,7 +107,7 @@ reportLines = [
   if len(x) > 0
 ]
 
-with open(os.environ['WORKSPACE'] + '/test.csv', 'a') as csvfile:
+with open('/data/test.csv', 'a') as csvfile:
   length = os.fstat(csvfile.fileno()).st_size
 
   csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -116,6 +116,6 @@ with open(os.environ['WORKSPACE'] + '/test.csv', 'a') as csvfile:
     csvwriter.writerow(['build number', 'label', 'precision', 'recall', 'f1-score', 'support'])
 
   [
-    csvwriter.writerow([os.environ['BUILD_NUMBER']] + x) 
+    csvwriter.writerow([sys.argv[2]] + x) 
     for x in reportLines
   ]
