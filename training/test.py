@@ -107,7 +107,7 @@ reportLines = [
   if len(x) > 0
 ]
 
-with open('/data/test.csv', 'a') as csvfile:
+with open('/data/birds_' + sys.argv[1] + '.csv', 'a') as csvfile:
   length = os.fstat(csvfile.fileno()).st_size
 
   csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
