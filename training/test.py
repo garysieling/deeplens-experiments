@@ -2,6 +2,8 @@ import numpy as np
 import cv2
 import os
 import sys
+import re
+import csv
 
 class SimplePreprocessor:
     def __init__(self, width, height, inter=cv2.INTER_AREA):
@@ -94,5 +96,26 @@ neighbors = 10
 print("[INFO] evaluating k-NN classifier...")
 model = KNeighborsClassifier(n_neighbors=neighbors, n_jobs=jobs)
 model.fit(trainX, trainY)
-print(classification_report(testY, model.predict(testX), target_names=le.classes_))
 
+report=classification_report(testY, model.predict(testX), target_names=le.classes_)
+
+print(report)
+
+reportLines = [
+  re.compile(" [ ]+").split(x.strip())
+  for x in report.split("\n")[2:] 
+  if len(x) > 0
+]
+
+with open(os.environ['WORKSPACE'] + '/test.csv', 'a') as csvfile:
+  length = os.fstat(csvfile.fileno()).st_size
+
+  csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+  if (length == 0):
+    csvwriter.writerow(['build number', 'label', 'precision', 'recall', 'f1-score', 'support'])
+
+  [
+    csvwriter.writerow([os.environ['BUILD_NUMBER']] + x) 
+    for x in reportLines
+  ]
