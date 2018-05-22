@@ -16,11 +16,15 @@ report = [
   if len(x) > 0
 ]
 
+with open('test.csv', 'a') as csvfile:
+  length = os.fstat(csvfile.fileno()).st_size
 
-with open('test.csv', 'w') as csvfile:
   csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-  csvwriter.writerow(['build number', 'label', 'precision', 'recall', 'f1-score', 'support'])
+
+  if (length == 0):
+    csvwriter.writerow(['build number', 'label', 'precision', 'recall', 'f1-score', 'support'])
 
   [
-    csvwriter.writerow([os.environ['BUILD_NUMBER']] + x) for x in report
+    csvwriter.writerow([os.environ['BUILD_NUMBER']] + x) 
+    for x in report
   ]
