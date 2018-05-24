@@ -16,15 +16,33 @@ report = [
   if len(x) > 0
 ]
 
-with open('test.csv', 'a') as csvfile:
-  length = os.fstat(csvfile.fileno()).st_size
+build_name = 'fast'
+build_number = '1'
+technique = 'kmeans'
 
-  csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+if ('BUILD_NUMBER' in os.environ):
+  build_number = os.environ['BUILD_NUMBER']
 
-  if (length == 0):
-    csvwriter.writerow(['build number', 'label', 'precision', 'recall', 'f1-score', 'support'])
+keys = (['build name', 'build number', 'technique',  'label', 'precision', 'recall', 'f1-score', 'support'])
+data = [[build_name, build_number, technique] + x for x in report]
 
-  [
-    csvwriter.writerow([os.environ['BUILD_NUMBER']] + x) 
-    for x in report
-  ]
+import json
+objects = [
+  json.dumps(dict(zip(keys, values)))
+  for values in data
+]
+
+print(objects)
+
+import splunklib.client as client
+splunkargs = {}
+
+service = client.connect(
+  host='prd-p-vtk8vp5x5ggv.cloud.splunk.com',
+  port='8089',
+  username='admin',
+  password='changeme',
+  scheme='https',
+  version='5.0'
+)
+#cn = service.indexes[index].attach(**kwargs_submit)
