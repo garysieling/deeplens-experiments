@@ -19,12 +19,15 @@ report = [
 build_name = 'fast'
 build_number = '1'
 technique = 'kmeans'
+dataset = 'birdsnap'
+hyperparameters = 'species=3,neighbors=10,jobs=5'
+duration = 7
 
 if ('BUILD_NUMBER' in os.environ):
   build_number = os.environ['BUILD_NUMBER']
 
-keys = (['build name', 'build number', 'technique',  'label', 'precision', 'recall', 'f1-score', 'support'])
-data = [[build_name, build_number, technique] + x for x in report]
+keys = (['build name', 'build number', 'technique', 'hyperparameters', 'dataset', 'duration', 'label', 'precision', 'recall', 'f1-score', 'support'])
+data = [[build_name, build_number, technique, hyperparameters, dataset, duration] + x for x in report]
 
 import json
 objects = [
@@ -36,17 +39,11 @@ import splunklib.client as client
 splunkargs = {}
 
 token="c8b8b9fd-f366-4c6f-9f17-993cae466d58"
-host='input-prd-p-vtk8vp5x5ggv.cloud.splunk.com/services/collector'
 port='8088'
 import urllib.parse
 import urllib.request
 
 host = "input-prd-p-vtk8vp5x5ggv.cloud.splunk.com"
-
-data = urllib.parse.urlencode({
-  'Connection': 'keep-alive', 
-  'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-})
 
 url = "https://" + host + ":8088/services/collector/event"
 
