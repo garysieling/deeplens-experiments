@@ -5,6 +5,7 @@ import sys
 import re
 import csv
 import time
+import json
 
 MAX_SPECIES = int(sys.argv[1])
 
@@ -104,9 +105,6 @@ class Parameters(object):
 parameters = Parameters(os.environ['PARAMETERS'])
 print("Received parameters: " + parameters)
 
-jobs = 5
-neighbors = 10
-
 print("[INFO] evaluating k-NN classifier...")
 model = KNeighborsClassifier(**parameters)
 model.fit(trainX, trainY)
@@ -144,7 +142,6 @@ if ('BUILD_NUMBER' in os.environ):
 keys = (['build name', 'build number', 'technique', 'hyperparameters', 'dataset', 'duration', 'label', 'precision', 'recall', 'f1-score', 'support'])
 data = [[build_name, build_number, technique, hyperparameters, dataset, duration] + x for x in report]
 
-import json
 objects = [
   dict(zip(keys, values))
   for values in data
