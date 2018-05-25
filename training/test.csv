@@ -1,0 +1,5 @@
+build number,label,precision,recall,f1-score,support
+123,Acadian_Flycatcher,0.00,0.00,0.00,23
+123,Acorn_Woodpecker,1.00,0.12,0.21,25
+123,Zone_tailed_Hawk,0.00,0.00,0.00,17
+123,avg / total,0.02,0.01,0.01,11258

@@ -28,21 +28,69 @@ data = [[build_name, build_number, technique] + x for x in report]
 
 import json
 objects = [
-  json.dumps(dict(zip(keys, values)))
+  dict(zip(keys, values))
   for values in data
 ]
-
-print(objects)
 
 import splunklib.client as client
 splunkargs = {}
 
-service = client.connect(
-  host='prd-p-vtk8vp5x5ggv.cloud.splunk.com',
-  port='8089',
-  username='admin',
-  password='changeme',
-  scheme='https',
-  version='5.0'
-)
-#cn = service.indexes[index].attach(**kwargs_submit)
+token="c8b8b9fd-f366-4c6f-9f17-993cae466d58"
+host='input-prd-p-vtk8vp5x5ggv.cloud.splunk.com/services/collector'
+port='8088'
+import urllib.parse
+import urllib.request
+
+host = "input-prd-p-vtk8vp5x5ggv.cloud.splunk.com"
+
+data = urllib.parse.urlencode({
+  'Connection': 'keep-alive', 
+  'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+})
+
+url = "https://" + host + ":8088/services/collector/event"
+
+import requests
+headers = {
+  'Authorization': 'Splunk ' + token,
+  'X-Splunk-Request-Channel': 'dea42704-9036-428b-a319-0025754046ec'
+}
+
+import logging
+import contextlib
+try:
+    from http.client import HTTPConnection # py3
+except ImportError:
+    from httplib import HTTPConnection # py2
+
+def debug_requests_on():
+    '''Switches on logging of the requests module.'''
+    HTTPConnection.debuglevel = 1
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
+
+debug_requests_on()
+
+logging.basicConfig(level=logging.DEBUG)
+
+print(objects[0])
+
+for o in objects:
+  jsonData = {
+    "host":"jenkins",
+    "index":"model-performance",
+    "sourcetype":"http",
+    "source":"http:python-report",
+    "event": json.dumps(o)
+  }
+  r = requests.post(url, json=jsonData, headers=headers, verify=False)
+  print(r.json())
+
+#curl -k  https://input-prd-p-vtk8vp5x5ggv.cloud.splunk.com:8088/services/collector/event -H "Authorization: Splunk c8b8b9fd-f366-4c6f-9f17-993cae466d58" -d '{"event": "hello world"}'
+
+# index=""
+# source=""
