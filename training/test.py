@@ -122,7 +122,7 @@ duration = end_time - start_time
 
 params = model.get_params()
 params['species'] = MAX_SPECIES
-hyperparameters = JSON.dumps(params)
+hyperparameters = json.dumps(params)
 
 import itertools
 technique = type(model).__name__
