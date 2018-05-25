@@ -126,7 +126,8 @@ hyperparameters = json.dumps(params)
 import itertools
 technique = type(model).__name__
 
-description = ""
+experiment_description = ""
+experiment_id = ""
 
 if ('BUILD_NAME' in os.environ):
   build_name = os.environ['BUILD_NAME']
@@ -134,8 +135,11 @@ if ('BUILD_NAME' in os.environ):
 if ('BUILD_NUMBER' in os.environ):
   build_number = os.environ['BUILD_NUMBER']
 
-if ('DESCRIPTION' in os.environ):
-  description = os.environ['DESCRIPTION']
+if ('EXPERIMENT_DESCRIPTION' in os.environ):
+  experiment_description = os.environ['EXPERIMENT_DESCRIPTION']
+
+if ('EXPERIMENT_ID' in os.environ):
+  experiment_id = os.environ['EXPERIMENT_ID']
 
 def replace(x):
     if (x == "avg / total"):
@@ -149,12 +153,12 @@ def replace(x):
 keys = ([
     'build name', 'build number', 'technique', 
     'hyperparameters', 'dataset', 'duration', 
-    'description',
+    'experiment_description', 'experiment_id',
     'label', 'precision', 'recall', 'f1-score', 'support'])
 data = [[
     build_name, build_number, technique, 
     hyperparameters, dataset, duration,
-    description] + 
+    experiment_description, experiment_id] + 
     replace(x) for x in report]
 
 objects = [
