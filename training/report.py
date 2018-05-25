@@ -35,9 +35,6 @@ objects = [
   for values in data
 ]
 
-import splunklib.client as client
-splunkargs = {}
-
 token="c8b8b9fd-f366-4c6f-9f17-993cae466d58"
 port='8088'
 import urllib.parse
