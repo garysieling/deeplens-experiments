@@ -103,7 +103,7 @@ class Parameters(object):
         self.__dict__ = json.loads(data)
 
 parameters = Parameters(os.environ['PARAMETERS'])
-print("Received parameters: " + parameters)
+print("Received parameters: " + os.environ['PARAMETERS'])
 
 print("[INFO] evaluating k-NN classifier...")
 model = KNeighborsClassifier(**parameters)
