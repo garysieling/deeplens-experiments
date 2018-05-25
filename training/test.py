@@ -98,12 +98,8 @@ label_10 = le.fit_transform(labels)
 
 (trainX, testX, trainY, testY) = train_test_split(data, label_10, test_size=0.25, random_state=42)
 
-class Parameters(object):
-    def __init__(self, data):
-        self.__dict__ = json.loads(data)
-
-parameters = Parameters(os.environ['PARAMETERS'])
 print("Received parameters: " + os.environ['PARAMETERS'])
+parameters = json.loads(os.environ['PARAMETERS'])
 
 print("[INFO] evaluating k-NN classifier...")
 model = KNeighborsClassifier(**parameters)
