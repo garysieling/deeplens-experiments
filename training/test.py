@@ -97,18 +97,23 @@ label_10 = le.fit_transform(labels)
 
 (trainX, testX, trainY, testY) = train_test_split(data, label_10, test_size=0.25, random_state=42)
 
+class Parameters(object):
+    def __init__(self, data):
+        self.__dict__ = json.loads(data)
+
+parameters = Parameters(os.environ['PARAMETERS'])
+print("Received parameters: " + parameters)
+
 jobs = 5
 neighbors = 10
 
 print("[INFO] evaluating k-NN classifier...")
-model = KNeighborsClassifier(n_neighbors=neighbors, n_jobs=jobs)
+model = KNeighborsClassifier(**parameters)
 model.fit(trainX, trainY)
 
 end_time = time.clock() * 1000
 
 report=classification_report(testY, model.predict(testX), target_names=le.classes_)
-
-
 
 report = [
   re.compile(" [ ]+").split(x.strip())
