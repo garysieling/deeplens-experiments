@@ -4,6 +4,9 @@ import os
 import sys
 import re
 import csv
+import time
+
+MAX_SPECIES = int(sys.argv[1])
 
 class SimplePreprocessor:
     def __init__(self, width, height, inter=cv2.INTER_AREA):
@@ -28,7 +31,7 @@ class SimpleDatasetLoader:
         distinct_labels = []
 
         for (i, imagePath) in enumerate(imagePaths):
-            if (len(distinct_labels) >= int(sys.argv[1])):
+            if (len(distinct_labels) >= MAX_SPECIES):
               continue
 
             image = cv2.imread(imagePath)
@@ -60,10 +63,14 @@ class SimpleDatasetLoader:
                         
         return (np.array(data), np.array(labels))
 
+start_time = time.clock() * 1000
+
 todo = SimpleDatasetLoader(preprocessors=[SimplePreprocessor(200, 200)])
 
 from os import listdir
-mypath = "/data/birdsnap/download/images"
+
+dataset = 'birdsnap'
+mypath = '/data/' + dataset + '/download/images'
 from os.path import isfile, join
 
 found = []
@@ -97,25 +104,95 @@ print("[INFO] evaluating k-NN classifier...")
 model = KNeighborsClassifier(n_neighbors=neighbors, n_jobs=jobs)
 model.fit(trainX, trainY)
 
+end_time = time.clock() * 1000
+
 report=classification_report(testY, model.predict(testX), target_names=le.classes_)
 
-print(report)
 
-reportLines = [
+
+report = [
   re.compile(" [ ]+").split(x.strip())
   for x in report.split("\n")[2:] 
   if len(x) > 0
 ]
 
-with open('/data/birds_' + sys.argv[1] + '.csv', 'a') as csvfile:
-  length = os.fstat(csvfile.fileno()).st_size
+build_name = ''
+build_number = ''
+duration = end_time - start_time
 
-  csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+params = model.get_params()
+params['species'] = MAX_SPECIES
+hyperparameters = JSON.dumps(params)
 
-  if (length == 0):
-    csvwriter.writerow(['build number', 'label', 'precision', 'recall', 'f1-score', 'support'])
+import itertools
+technique = type(model).__name__
 
-  [
-    csvwriter.writerow([sys.argv[2]] + x) 
-    for x in reportLines
-  ]
+if ('BUILD_NAME' in os.environ):
+  build_name = os.environ['BUILD_NAME']
+
+if ('BUILD_NUMBER' in os.environ):
+  build_number = os.environ['BUILD_NUMBER']
+
+if ('BUILD_NUMBER' in os.environ):
+  build_number = os.environ['BUILD_NUMBER']
+
+keys = (['build name', 'build number', 'technique', 'hyperparameters', 'dataset', 'duration', 'label', 'precision', 'recall', 'f1-score', 'support'])
+data = [[build_name, build_number, technique, hyperparameters, dataset, duration] + x for x in report]
+
+import json
+objects = [
+  dict(zip(keys, values))
+  for values in data
+]
+
+import splunklib.client as client
+splunkargs = {}
+
+token="c8b8b9fd-f366-4c6f-9f17-993cae466d58"
+port='8088'
+import urllib.parse
+import urllib.request
+
+host = "input-prd-p-vtk8vp5x5ggv.cloud.splunk.com"
+
+url = "https://" + host + ":8088/services/collector/event"
+
+import requests
+headers = {
+  'Authorization': 'Splunk ' + token,
+  'X-Splunk-Request-Channel': 'dea42704-9036-428b-a319-0025754046ec'
+}
+
+import logging
+import contextlib
+try:
+    from http.client import HTTPConnection # py3
+except ImportError:
+    from httplib import HTTPConnection # py2
+
+def debug_requests_on():
+    '''Switches on logging of the requests module.'''
+    HTTPConnection.debuglevel = 1
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
+
+debug_requests_on()
+
+logging.basicConfig(level=logging.DEBUG)
+
+print(objects[0])
+
+for o in objects:
+  jsonData = {
+    "host":"jenkins",
+    "index":"model-performance",
+    "sourcetype":"http",
+    "source":"http:python-report",
+    "event": json.dumps(o)
+  }
+  r = requests.post(url, json=jsonData, headers=headers, verify=False)
+  print(r.json())
