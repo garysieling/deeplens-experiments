@@ -126,17 +126,36 @@ hyperparameters = json.dumps(params)
 import itertools
 technique = type(model).__name__
 
+description = ""
+
 if ('BUILD_NAME' in os.environ):
   build_name = os.environ['BUILD_NAME']
 
 if ('BUILD_NUMBER' in os.environ):
   build_number = os.environ['BUILD_NUMBER']
 
-if ('BUILD_NUMBER' in os.environ):
-  build_number = os.environ['BUILD_NUMBER']
+if ('DESCRIPTION' in os.environ):
+  description = os.environ['DESCRIPTION']
 
-keys = (['build name', 'build number', 'technique', 'hyperparameters', 'dataset', 'duration', 'label', 'precision', 'recall', 'f1-score', 'support'])
-data = [[build_name, build_number, technique, hyperparameters, dataset, duration] + x for x in report]
+def replace(x):
+    if (x == "avg / total"):
+        return "avg"
+    else:
+        if (x == "f1-score"):
+            return "f1"
+        else:
+            return x
+
+keys = ([
+    'build name', 'build number', 'technique', 
+    'hyperparameters', 'dataset', 'duration', 
+    'description',
+    'label', 'precision', 'recall', 'f1-score', 'support'])
+data = [[
+    build_name, build_number, technique, 
+    hyperparameters, dataset, duration,
+    description] + 
+    replace(x) for x in report]
 
 objects = [
   dict(zip(keys, values))
@@ -178,8 +197,6 @@ def debug_requests_on():
 debug_requests_on()
 
 logging.basicConfig(level=logging.DEBUG)
-
-print(objects[0])
 
 for o in objects:
   jsonData = {
