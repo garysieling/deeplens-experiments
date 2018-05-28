@@ -8,6 +8,14 @@ import time
 import json
 
 MAX_SPECIES = int(sys.argv[1])
+WIDTH = int(sys.argv[2])
+SIZE = int(sys.argv[3])
+
+ELASTICSEARCH_URL = os.environ['ELASTICSEARCH_URL']
+ELASTICSEARCH_USER = os.environ['ELASTICSEARCH_USER']
+ELASTICSEARCH_PASS = os.environ['ELASTICSEARCH_PASS']
+ELASTICSEARCH_INDEX = os.environ['ELASTICSEARCH_INDEX']
+ELASTICSEARCH_INDEX_TYPE = os.environ['ELASTICSEARCH_INDEX_TYPE']
 
 class SimplePreprocessor:
     def __init__(self, width, height, inter=cv2.INTER_AREA):
@@ -86,7 +94,7 @@ from sklearn.cross_validation import train_test_split
 from sklearn.metrics import classification_report
 import argparse
 
-sp = SimplePreprocessor(32, 32)
+sp = SimplePreprocessor(WIDTH, HEIGHT)
 sdl = SimpleDatasetLoader(preprocessors=[sp])
 (data, labels) = sdl.load(found, verbose=500)
 data = data.reshape((data.shape[0], 3072))
@@ -121,6 +129,9 @@ duration = end_time - start_time
 
 params = model.get_params()
 params['species'] = MAX_SPECIES
+params['image_width'] = WIDTH
+params['image_height'] = HEIGHT
+
 hyperparameters = json.dumps(params)
 
 import itertools
@@ -166,20 +177,31 @@ objects = [
   for values in data
 ]
 
-token="c8b8b9fd-f366-4c6f-9f17-993cae466d58"
-port='8088'
 import urllib.parse
 import urllib.request
-
-host = "input-prd-p-vtk8vp5x5ggv.cloud.splunk.com"
-
-url = "https://" + host + ":8088/services/collector/event"
-
 import requests
-headers = {
-  'Authorization': 'Splunk ' + token,
-  'X-Splunk-Request-Channel': 'dea42704-9036-428b-a319-0025754046ec'
-}
+import logging
+import contextlib
+
+try:
+    from http.client import HTTPConnection # py3
+except ImportError:
+    from httplib import HTTPConnection # py2
+
+def debug_requests_on():
+    '''Switches on logging of the requests module.'''
+    HTTPConnection.debuglevel = 1
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
+
+debug_requests_on()
+
+import urllib.parse
+import urllib.request
 
 import logging
 import contextlib
@@ -202,13 +224,16 @@ debug_requests_on()
 
 logging.basicConfig(level=logging.DEBUG)
 
+url = ELASTICSEARCH_URL + "/api/console/proxy?path=%2F" + ELASTICSEARCH_INDEX + "%2F" + ELASTICSEARCH_INDEX_TYPE + "%2F&method=POST"
+
+import base64
+
 for o in objects:
-  jsonData = {
-    "host":"jenkins",
-    "index":"model-performance",
-    "sourcetype":"http",
-    "source":"http:python-report",
-    "event": json.dumps(o)
-  }
-  r = requests.post(url, json=jsonData, headers=headers, verify=False)
-  print(r.json())
+  reply = requests.post(
+    url,
+    headers={"kbn-xsrf": "reporting"},
+    auth = requests.auth.HTTPBasicAuth(ELASTICSEARCH_USER, ELASTICSEARCH_PASS),
+    json = o
+  )
+
+  print("reply: " + reply.text)

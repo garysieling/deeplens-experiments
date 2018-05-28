@@ -1,3 +1,5 @@
+import requests
+
 import re
 import os
 import csv
@@ -20,7 +22,12 @@ build_name = 'fast'
 build_number = '1'
 technique = 'kmeans'
 dataset = 'birdsnap'
-hyperparameters = 'species=3,neighbors=10,jobs=5'
+hyperparameters = {
+  'species': 3,
+  'neighbors': 10,
+  'jobs': 5
+}
+
 duration = 7
 
 if ('BUILD_NUMBER' in os.environ):
@@ -35,20 +42,8 @@ objects = [
   for values in data
 ]
 
-token="c8b8b9fd-f366-4c6f-9f17-993cae466d58"
-port='8088'
 import urllib.parse
 import urllib.request
-
-host = "input-prd-p-vtk8vp5x5ggv.cloud.splunk.com"
-
-url = "https://" + host + ":8088/services/collector/event"
-
-import requests
-headers = {
-  'Authorization': 'Splunk ' + token,
-  'X-Splunk-Request-Channel': 'dea42704-9036-428b-a319-0025754046ec'
-}
 
 import logging
 import contextlib
@@ -71,20 +66,22 @@ debug_requests_on()
 
 logging.basicConfig(level=logging.DEBUG)
 
-print(objects[0])
+index = "experiments"
+index_type = "1"
+
+url = "https://bd333f63f75f41a6af393bc0e0dc6b63.us-east-1.aws.found.io:9243/api/console/proxy?path=%2F" + index + "%2F" + index_type + "%2F&method=POST"
+
+USERNAME = "elastic"
+PASSWORD = "C3RPvCScJh8ZQhDsflC5qeVC"
+
+import base64
 
 for o in objects:
-  jsonData = {
-    "host":"jenkins",
-    "index":"model-performance",
-    "sourcetype":"http",
-    "source":"http:python-report",
-    "event": json.dumps(o)
-  }
-  r = requests.post(url, json=jsonData, headers=headers, verify=False)
-  print(r.json())
+  reply = requests.post(
+    url,
+    headers={"kbn-xsrf": "reporting"},
+    auth = requests.auth.HTTPBasicAuth(USERNAME, PASSWORD),
+    json = o
+  )
 
-#curl -k  https://input-prd-p-vtk8vp5x5ggv.cloud.splunk.com:8088/services/collector/event -H "Authorization: Splunk c8b8b9fd-f366-4c6f-9f17-993cae466d58" -d '{"event": "hello world"}'
-
-# index=""
-# source=""
+  print("reply: " + reply.text)
