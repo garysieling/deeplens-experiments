@@ -9,8 +9,8 @@ import json
 
 MAX_SPECIES = int(sys.argv[1])
 WIDTH = int(sys.argv[2])
-SIZE = int(sys.argv[3])
-
+HEIGHT = int(sys.argv[3])
+ 
 ELASTICSEARCH_URL = os.environ['ELASTICSEARCH_URL']
 ELASTICSEARCH_USER = os.environ['ELASTICSEARCH_USER']
 ELASTICSEARCH_PASS = os.environ['ELASTICSEARCH_PASS']
@@ -229,11 +229,18 @@ url = ELASTICSEARCH_URL + "/api/console/proxy?path=%2F" + ELASTICSEARCH_INDEX + 
 import base64
 
 for o in objects:
-  reply = requests.post(
-    url,
-    headers={"kbn-xsrf": "reporting"},
-    auth = requests.auth.HTTPBasicAuth(ELASTICSEARCH_USER, ELASTICSEARCH_PASS),
-    json = o
-  )
+  if (ELASTICSEARCH_USER is None):
+    reply = requests.post(
+      url,
+      headers={"kbn-xsrf": "reporting"},
+      json = o
+    )
+  else:
+    reply = requests.post(
+      url,
+      headers={"kbn-xsrf": "reporting"},
+      auth = requests.auth.HTTPBasicAuth(ELASTICSEARCH_USER, ELASTICSEARCH_PASS),
+      json = o
+    )
 
   print("reply: " + reply.text)
