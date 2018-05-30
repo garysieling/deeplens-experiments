@@ -43,4 +43,4 @@ end_time = time.clock() * 1000
 report = classification_report(testY, model.predict(testX), target_names=le.classes_)
 
 from save import save_report
-save_report(report, start_time, end_time, model, MAX_SPECIES, WIDTH, HEIGHT)
+save_report(report, start_time, end_time, model, MAX_SPECIES, WIDTH, HEIGHT, DATASET)
