@@ -16,6 +16,7 @@ ELASTICSEARCH_USER = os.environ['ELASTICSEARCH_USER']
 ELASTICSEARCH_PASS = os.environ['ELASTICSEARCH_PASS']
 ELASTICSEARCH_INDEX = os.environ['ELASTICSEARCH_INDEX']
 ELASTICSEARCH_INDEX_TYPE = os.environ['ELASTICSEARCH_INDEX_TYPE']
+GIT_SHA = os.environ['GIT_SHA']
 
 def replace(x):
   if (x == "avg / total"):
@@ -56,6 +57,7 @@ def save_report(report, start_time, end_time, model, species, width, height, dat
   params['species'] = species
   params['image_width'] = width
   params['image_height'] = height
+  params['git_sha'] = GIT_SHA
 
   hyperparameters = params
 
