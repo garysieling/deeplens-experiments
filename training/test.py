@@ -229,7 +229,7 @@ url = ELASTICSEARCH_URL + "/api/console/proxy?path=%2F" + ELASTICSEARCH_INDEX + 
 import base64
 
 for o in objects:
-  if (ELASTICSEARCH_USER is None):
+  if (not ELASTICSEARCH_USER):
     reply = requests.post(
       url,
       headers={"kbn-xsrf": "reporting"},
