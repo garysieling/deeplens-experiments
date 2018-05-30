@@ -132,7 +132,7 @@ params['species'] = MAX_SPECIES
 params['image_width'] = WIDTH
 params['image_height'] = HEIGHT
 
-hyperparameters = json.dumps(params)
+hyperparameters = params
 
 import itertools
 technique = type(model).__name__
