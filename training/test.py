@@ -224,7 +224,7 @@ debug_requests_on()
 
 logging.basicConfig(level=logging.DEBUG)
 
-url = ELASTICSEARCH_URL + "/api/console/proxy?path=%2F" + ELASTICSEARCH_INDEX + "%2F" + ELASTICSEARCH_INDEX_TYPE + "%2F&method=POST"
+url = ELASTICSEARCH_URL + "%2F" + ELASTICSEARCH_INDEX + "%2F" + ELASTICSEARCH_INDEX_TYPE + "%2F&method=POST"
 
 import base64
 
