@@ -23,15 +23,15 @@ class SimpleDatasetLoader:
     if self.preprocessors is None:
       self.preprocessors = []
             
-  def load(self, imagePaths, verbose=-1):
+  def load(self, verbose=-1):
     print("loading")
     mypath = '/data/' + self.dataset + '/download/images'
 
-    found = []
+    imagePaths = []
     for root, subFolders, files in os.walk(mypath):
       for folder in subFolders:
         for f in listdir(mypath + "/" + folder):
-          found.append(mypath + "/" + folder + "/" + f)        
+          imagePaths.append(mypath + "/" + folder + "/" + f)        
 
     data = []
     labels = []

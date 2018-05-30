@@ -20,8 +20,8 @@ from sklearn.cross_validation import train_test_split
 from sklearn.metrics import classification_report
 
 sp = SimplePreprocessor(WIDTH, HEIGHT)
-sdl = SimpleDatasetLoader(dataset = dataset, species = MAX_SPECIES, preprocessors=[sp])
-(data, labels) = sdl.load(found, verbose=500)
+sdl = SimpleDatasetLoader(dataset = DATASET, species = MAX_SPECIES, preprocessors=[sp])
+(data, labels) = sdl.load(verbose=500)
 data = data.reshape((data.shape[0], 3072))
 
 print("[INFO] features matrix: {:.1f}MB".format(data.nbytes / (1024 * 1000.0)))
