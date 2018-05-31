@@ -42,9 +42,18 @@ def debug_requests_on():
   requests_log.setLevel(logging.DEBUG)
   requests_log.propagate = True
 
+def typed(x, i):
+  if (i == 0):
+    return x
+  else:
+    if i == 4:
+      return int(float(x))
+    else:
+      return float(x)
+    
 def save_report(report, start_time, end_time, model, species, width, height, dataset):
   report = [
-    re.compile(" [ ]+").split(x.strip())
+    [typed(v, i) for v, i in enumerate(re.compile(" [ ]+").split(x.strip()))]
     for x in report.split("\n")[2:] 
     if len(x) > 0
   ]
