@@ -38,7 +38,7 @@ class SimpleDatasetLoader:
     distinct_labels = []
 
     for (i, imagePath) in enumerate(imagePaths):
-      if (len(distinct_labels) >= self.species):
+      if (len(distinct_labels) > self.species):
         continue
 
       image = cv2.imread(imagePath)
