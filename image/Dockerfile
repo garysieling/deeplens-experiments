@@ -4,9 +4,12 @@ ARG OPENCV_VERSION="3.0.0"
 
 # install dependencies
 RUN apt-get update
+RUN add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main" && \
+    apt update && \
+    apt install -y libjasper1 libjasper-dev
+
 RUN apt-get install -y libopencv-dev yasm libjpeg-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libdc1394-22-dev libv4l-dev python-dev python-numpy libtbb-dev libqt4-dev libgtk2.0-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils pkg-config
-RUN apt-get install -y curl build-essential checkinstall cmake
-RUN apt-get install -y git
+RUN apt-get install -y curl build-essential checkinstall cmake git
 
 # download opencv
 RUN curl -sL https://github.com/Itseez/opencv/archive/$OPENCV_VERSION.tar.gz | tar xvz -C /tmp
@@ -26,6 +29,10 @@ RUN ln /dev/null /dev/raw1394 # hide warning - http://stackoverflow.com/question
 
 RUN apt-get install -y python-setuptools python-dev build-essential
 RUN pip install jupyter  
+
+RUN apt-get install -y wget python gcc
+RUN wget https://bootstrap.pypa.io/get-pip.py && \
+  python get-pip.py
 
 # cleanup package manager
 RUN apt-get remove --purge -y curl build-essential checkinstall cmake
