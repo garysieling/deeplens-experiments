@@ -1,8 +1,6 @@
 printenv 
 
-cd training
-chmod +x test.sh
-export DIR=`pwd`
+DIR=`pwd`/training
 
 pwd
 ls $DIR
