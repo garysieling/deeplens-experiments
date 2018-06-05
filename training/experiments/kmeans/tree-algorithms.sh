@@ -1,0 +1,19 @@
+EXPERIMENT_ID="kmeans-neighbors-tree-algorithm"
+EXPERIMENT_DESCRIPTION="Does the tree generation algorithms affect performance?"
+
+PARAMETERS='{"n_jobs": 5, "n_neighbors": 10, "algorithm": "ball_tree"}'
+
+docker run --rm -e PASSWORD="pass" -t -v jenkins_home:/var/jenkins_home --mount type=bind,source=/data,target=/data -e "BUILD_NUMBER=$BUILD_NUMBER" -e "EXPERIMENT_DESCRIPTION=$EXPERIMENT_DESCRIPTION" -e "EXPERIMENT_ID=$EXPERIMENT_ID" -e "BUILD_NAME=$JOB_NAME" -e "PARAMETERS=$PARAMETERS" -e "ELASTICSEARCH_URL=$ELASTICSEARCH_URL" -e "ELASTICSEARCH_USER=$ELASTICSEARCH_USER" -e "ELASTICSEARCH_PASS=$ELASTICSEARCH_PASS" -e "ELASTICSEARCH_INDEX=$ELASTICSEARCH_INDEX" -e "ELASTICSEARCH_INDEX_TYPE=$ELASTICSEARCH_INDEX_TYPE" -e "GIT_SHA=$GIT_SHA" segaleran/opencv-jupyter python $DIR/test.py 10 64 64 birdsnap
+
+
+PARAMETERS='{"n_jobs": 5, "n_neighbors": 10, "algorithm": "kd_tree"}'
+
+docker run --rm -e PASSWORD="pass" -t -v jenkins_home:/var/jenkins_home --mount type=bind,source=/data,target=/data -e "BUILD_NUMBER=$BUILD_NUMBER" -e "EXPERIMENT_DESCRIPTION=$EXPERIMENT_DESCRIPTION" -e "EXPERIMENT_ID=$EXPERIMENT_ID" -e "BUILD_NAME=$JOB_NAME" -e "PARAMETERS=$PARAMETERS" -e "ELASTICSEARCH_URL=$ELASTICSEARCH_URL" -e "ELASTICSEARCH_USER=$ELASTICSEARCH_USER" -e "ELASTICSEARCH_PASS=$ELASTICSEARCH_PASS" -e "ELASTICSEARCH_INDEX=$ELASTICSEARCH_INDEX" -e "ELASTICSEARCH_INDEX_TYPE=$ELASTICSEARCH_INDEX_TYPE" -e "GIT_SHA=$GIT_SHA" segaleran/opencv-jupyter python $DIR/test.py 10 64 64 birdsnap
+
+PARAMETERS='{"n_jobs": 5, "n_neighbors": 10, "algorithm": "brute"}'
+
+docker run --rm -e PASSWORD="pass" -t -v jenkins_home:/var/jenkins_home --mount type=bind,source=/data,target=/data -e "BUILD_NUMBER=$BUILD_NUMBER" -e "EXPERIMENT_DESCRIPTION=$EXPERIMENT_DESCRIPTION" -e "EXPERIMENT_ID=$EXPERIMENT_ID" -e "BUILD_NAME=$JOB_NAME" -e "PARAMETERS=$PARAMETERS" -e "ELASTICSEARCH_URL=$ELASTICSEARCH_URL" -e "ELASTICSEARCH_USER=$ELASTICSEARCH_USER" -e "ELASTICSEARCH_PASS=$ELASTICSEARCH_PASS" -e "ELASTICSEARCH_INDEX=$ELASTICSEARCH_INDEX" -e "ELASTICSEARCH_INDEX_TYPE=$ELASTICSEARCH_INDEX_TYPE" -e "GIT_SHA=$GIT_SHA" segaleran/opencv-jupyter python $DIR/test.py 10 64 64 birdsnap
+
+PARAMETERS='{"n_jobs": 5, "n_neighbors": 10, "algorithm": "auto"}'
+
+docker run --rm -e PASSWORD="pass" -t -v jenkins_home:/var/jenkins_home --mount type=bind,source=/data,target=/data -e "BUILD_NUMBER=$BUILD_NUMBER" -e "EXPERIMENT_DESCRIPTION=$EXPERIMENT_DESCRIPTION" -e "EXPERIMENT_ID=$EXPERIMENT_ID" -e "BUILD_NAME=$JOB_NAME" -e "PARAMETERS=$PARAMETERS" -e "ELASTICSEARCH_URL=$ELASTICSEARCH_URL" -e "ELASTICSEARCH_USER=$ELASTICSEARCH_USER" -e "ELASTICSEARCH_PASS=$ELASTICSEARCH_PASS" -e "ELASTICSEARCH_INDEX=$ELASTICSEARCH_INDEX" -e "ELASTICSEARCH_INDEX_TYPE=$ELASTICSEARCH_INDEX_TYPE" -e "GIT_SHA=$GIT_SHA" segaleran/opencv-jupyter python $DIR/test.py 10 64 64 birdsnap
