@@ -2,7 +2,7 @@ printenv
 
 cd training
 chmod +x test.sh
-DIR=`pwd`
+DIR=`pwd`/training/
 
 pwd
 ls $DIR
