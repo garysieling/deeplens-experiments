@@ -10,6 +10,7 @@ import urllib.parse
 import urllib.request
 import requests
 import base64
+import uuid
 
 ELASTICSEARCH_URL = os.environ['ELASTICSEARCH_URL']
 ELASTICSEARCH_USER = os.environ['ELASTICSEARCH_USER']
@@ -87,15 +88,17 @@ def save_report(report, start_time, end_time, model, species, width, height, dat
 
   if ('EXPERIMENT_ID' in os.environ):
     experiment_id = os.environ['EXPERIMENT_ID']
+ 
+  runid = uuid.uuid4().hex
 
   keys = ([
-    'build name', 'build number', 'technique', 
+    'runid', 'build name', 'build number', 'technique', 
     'hyperparameters', 'dataset', 'duration', 
     'experiment_description', 'experiment_id',
     'label', 'precision', 'recall', 'f1-score', 'support'])
 
   data = [[
-    build_name, build_number, technique, 
+    runid, build_name, build_number, technique, 
     hyperparameters, dataset, duration,
     experiment_description, experiment_id] + 
     replace(x) for x in report]
