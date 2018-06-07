@@ -21,23 +21,25 @@ class SimplePreprocessor:
 
 
 class SimpleDatasetLoader:
-  def __init__(self, dataset, species, preprocessors=None):
+  def __init__(self, dataset, species, path, preprocessors=None):
     self.preprocessors = preprocessors
     self.species = species
     self.dataset = dataset
+    self.path = path
 
     if self.preprocessors is None:
       self.preprocessors = []
             
   def load(self, verbose=-1):
     print("loading")
-    mypath = '/data/' + self.dataset + '/download/images'
-
+    
     imagePaths = []
-    for root, subFolders, files in os.walk(mypath):
+    for root, subFolders, files in os.walk(self.path):
+      print(files)
+      
       for folder in subFolders:
-        for f in listdir(mypath + "/" + folder):
-          imagePaths.append(mypath + "/" + folder + "/" + f)        
+        for f in listdir(self.path + "/" + folder):
+          imagePaths.append(self.path + "/" + folder + "/" + f)
 
     data = []
     labels = []
