@@ -20,11 +20,21 @@ for root, subFolders, files in os.walk(mypath):
       imagePaths.append(root + "/" + f)
 
 random.shuffle(imagePaths)
+
+import cv2
+
+size = 20736
+
 X = [
   # (1080, 1920, 3)
-  imutils.resize(
-    imread(path),
-    width = 192
+  cv2.cvtColor(
+    imutils.resize(
+      imread(path),
+      width = 192
+    ),
+    cv2.COLOR_BGR2GRAY
+  ).reshape(
+    size
   )
   for path in imagePaths[0:100]
 ]
@@ -36,7 +46,8 @@ pretrain_num_iter = 50000
 finetune_num_iter = 100000
 visualize = True
 gpu = False
-layers = [int(i) for i in "784,500,500,2000,10".split(',')]
+
+layers = [int(i) for i in "20736,500,500,2000,10".split(',')]
 
 xpu = mx.gpu() if gpu else mx.cpu()
 print("Training on {}".format("GPU" if gpu else "CPU"))
@@ -51,6 +62,7 @@ val_X = X[50:]
 ae_model.layerwise_pretrain(train_X, batch_size, pretrain_num_iter, 'sgd', l_rate=0.1,
                               decay=0.0, lr_scheduler=mx.lr_scheduler.FactorScheduler(20000, 0.1),
                               print_every=print_every)
+
 ae_model.finetune(train_X, batch_size, finetune_num_iter, 'sgd', l_rate=0.1, decay=0.0,
                   lr_scheduler=mx.lr_scheduler.FactorScheduler(20000, 0.1), print_every=print_every)
 ae_model.save('mnist_pt.arg')
@@ -62,7 +74,7 @@ if visualize:
     from matplotlib import pyplot as plt
     from model import extract_feature
     # sample a random image
-    original_image = X[np.random.choice(X.shape[0]), :].reshape(1, 784)
+    original_image = X[np.random.choice(X.shape[0]), :].reshape(1, size)
     data_iter = mx.io.NDArrayIter({'data': original_image}, batch_size=1, shuffle=False,
                                   last_batch_handle='pad')
     # reconstruct the image
