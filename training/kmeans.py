@@ -20,7 +20,7 @@ from sklearn.cross_validation import train_test_split
 from sklearn.metrics import classification_report
 
 sp = SimplePreprocessor(WIDTH, HEIGHT)
-sdl = SimpleDatasetLoader(dataset = DATASET, species = MAX_SPECIES, preprocessors=[sp])
+sdl = SimpleDatasetLoader(dataset = DATASET, species = MAX_SPECIES, grayscale = False, preprocessors=[sp])
 (data, labels) = sdl.load(verbose=500)
 data = data.reshape((data.shape[0], 3 * WIDTH * HEIGHT))
 

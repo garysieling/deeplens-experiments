@@ -11,6 +11,7 @@ import urllib.request
 import requests
 import base64
 import uuid
+import time
 
 ELASTICSEARCH_URL = os.environ['ELASTICSEARCH_URL']
 ELASTICSEARCH_USER = os.environ['ELASTICSEARCH_USER']
@@ -52,7 +53,9 @@ def typed(i, x):
     else:
       return float(x)
 
-def save_report(report, start_time, end_time, model, species, width, height, dataset): 
+def save_report(report, start_time, model, species, width, height, dataset): 
+  end_time = time.clock() * 1000
+
   report = [
     [typed(i, v) for i, v in enumerate(re.compile(" [ ]+").split(x.strip()))]
     for x in report.split("\n")[2:] 

@@ -5,13 +5,19 @@ from os.path import isfile, join
 from os import listdir
 
 class SimplePreprocessor:
-  def __init__(self, width, height, inter=cv2.INTER_AREA):
+  def __init__(self, width, height, grayscale, inter=cv2.INTER_AREA):
     self.width = width
     self.height = height
     self.inter = inter
+    self.grayscale = grayscale
     
   def preprocess(self, image):
-    return cv2.resize(image, (self.width, self.height), interpolation=self.inter)
+    processed = cv2.resize(image, (self.width, self.height), interpolation=self.inter)
+
+    if (self.grayscale):
+      processed = cv2.cvtColor(processed, cv2.COLOR_BGR2GRAY)
+
+    return processed
 
 
 class SimpleDatasetLoader:
