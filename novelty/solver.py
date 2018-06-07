@@ -22,12 +22,14 @@ import logging
 
 import mxnet as mx
 import numpy as np
-
+import time
 
 class Monitor(object):
     def __init__(self, interval, level=logging.DEBUG, stat=None):
         self.interval = interval
         self.level = level
+        self.start_time = time.clock()
+
         if stat is None:
             def mean_abs(x):
                 return np.fabs(x).mean()
@@ -37,21 +39,36 @@ class Monitor(object):
 
     def forward_end(self, i, internals):
         if i % self.interval == 0 and logging.getLogger().isEnabledFor(self.level):
+            self.end_time = time.clock()
+
             for key in sorted(internals.keys()):
                 arr = internals[key]
-                logging.log(self.level, 'Iter:%d  param:%s\t\tstat(%s):%s',
-                            i, key, self.stat.__name__, str(self.stat(arr.asnumpy())))
+
+                logging.log(self.level, 'Iter:%d  param:%s\t\tstat(%s):%s:%s',
+                            i, key, self.stat.__name__, str(self.stat(arr.asnumpy()),
+                            str(self.end_time - self.start_time)
+                            ))
+
+            self.start_time = time.clock()
 
     def backward_end(self, i, weights, grads, metric=None):
+        self.end_time = time.clock()
+
         if i % self.interval == 0 and logging.getLogger().isEnabledFor(self.level):
             for key in sorted(grads.keys()):
                 arr = grads[key]
-                logging.log(self.level, 'Iter:%d  param:%s\t\tstat(%s):%s\t\tgrad_stat:%s',
+                logging.log(self.level, 'Iter:%d  param:%s\t\tstat(%s):%s\t\tgrad_stat:%s\t\tduration:%s',
                             i, key, self.stat.__name__,
-                            str(self.stat(weights[key].asnumpy())), str(self.stat(arr.asnumpy())))
+                            str(self.stat(weights[key].asnumpy())), str(self.stat(arr.asnumpy())), 
+                            str(self.end_time - self.start_time))
+            self.start_time = time.clock()
+
         if i % self.interval == 0 and metric is not None:
-            logging.log(logging.INFO, 'Iter:%d metric:%f', i, metric.get()[1])
+            logging.log(logging.INFO, 'Iter:%d metric:%f duration:%s', i, metric.get()[1], 
+                                        str(self.end_time - self.start_time))
             metric.reset()
+            self.start_time = time.clock()
+
 
 
 class Solver(object):

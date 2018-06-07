@@ -65,8 +65,10 @@ ae_model.layerwise_pretrain(train_X, batch_size, pretrain_num_iter, 'sgd', l_rat
 
 ae_model.finetune(train_X, batch_size, finetune_num_iter, 'sgd', l_rate=0.1, decay=0.0,
                   lr_scheduler=mx.lr_scheduler.FactorScheduler(20000, 0.1), print_every=print_every)
-ae_model.save('mnist_pt.arg')
-ae_model.load('mnist_pt.arg')
+
+ae_model.save('autoencoder.arg')
+ae_model.load('autoencoder.arg')
+
 print("Training error:", ae_model.eval(train_X))
 print("Validation error:", ae_model.eval(val_X))
 if visualize:
