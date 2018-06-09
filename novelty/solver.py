@@ -23,12 +23,16 @@ import logging
 import mxnet as mx
 import numpy as np
 import time
+import copy
+
+from save import save_report 
 
 class Monitor(object):
-    def __init__(self, interval, level=logging.DEBUG, stat=None):
+    def __init__(self, interval, hyperparameters, level=logging.DEBUG, stat=None):
         self.interval = interval
         self.level = level
         self.start_time = time.clock()
+        self.hyperparameters = hyperparameters
 
         if stat is None:
             def mean_abs(x):
@@ -41,31 +45,46 @@ class Monitor(object):
         if i % self.interval == 0 and logging.getLogger().isEnabledFor(self.level):
             self.end_time = time.clock()
 
+            data = copy.deepcopy(self.hyperparameters)
+            
             for key in sorted(internals.keys()):
                 arr = internals[key]
 
                 logging.log(self.level, 'Iter:%d  param:%s\t\tstat(%s):%s:%s',
-                            i, key, self.stat.__name__, str(self.stat(arr.asnumpy()),
-                            str(self.end_time - self.start_time)
-                            ))
+                            i, key, self.stat.__name__, str(self.stat(arr.asnumpy())),
+                            str(self.end_time - self.start_time))
+                data[self.stat.__name__] = str(self.stat(arr.asnumpy()))
 
+            save_report('forward', i, self.start_time, data)
             self.start_time = time.clock()
 
     def backward_end(self, i, weights, grads, metric=None):
         self.end_time = time.clock()
 
         if i % self.interval == 0 and logging.getLogger().isEnabledFor(self.level):
+            data = copy.deepcopy(self.hyperparameters)
+
             for key in sorted(grads.keys()):
                 arr = grads[key]
                 logging.log(self.level, 'Iter:%d  param:%s\t\tstat(%s):%s\t\tgrad_stat:%s\t\tduration:%s',
                             i, key, self.stat.__name__,
                             str(self.stat(weights[key].asnumpy())), str(self.stat(arr.asnumpy())), 
                             str(self.end_time - self.start_time))
+                data[self.stat.__name__] = str(self.stat(weights[key].asnumpy()))
+                data[self.stat.__name__ + ' grad_stat'] = str(self.stat(arr.asnumpy()))
+
+
+            save_report('backward', i, self.start_time, self.hyperparameters)
             self.start_time = time.clock()
 
         if i % self.interval == 0 and metric is not None:
             logging.log(logging.INFO, 'Iter:%d metric:%f duration:%s', i, metric.get()[1], 
                                         str(self.end_time - self.start_time))
+
+            data = copy.deepcopy(self.hyperparameters)
+            data['metric'] = metric.get()[1]
+            save_report('backward', i, self.start_time, self.hyperparameters)
+
             metric.reset()
             self.start_time = time.clock()
 

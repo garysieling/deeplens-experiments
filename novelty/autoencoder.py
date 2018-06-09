@@ -27,16 +27,28 @@ from solver import Solver, Monitor
 
 
 class AutoEncoderModel(model.MXModel):
-    def setup(self, dims, sparseness_penalty=None, pt_dropout=None,
+    def setup(self, dims, eval_batch_size, hyperparameters=None, sparseness_penalty=None, pt_dropout=None,
               ft_dropout=None, input_act=None, internal_act='relu', output_act=None):
         self.N = len(dims) - 1
         self.dims = dims
+        self.eval_batch_size = eval_batch_size
         self.stacks = []
         self.pt_dropout = pt_dropout
         self.ft_dropout = ft_dropout
         self.input_act = input_act
         self.internal_act = internal_act
         self.output_act = output_act
+
+        self.hyperparameters = hyperparameters
+        self.hyperparameters['N'] = self.N
+        self.hyperparameters['eval_batch_size'] = eval_batch_size
+        self.hyperparameters['dims'] = dims
+        self.hyperparameters['sparseness_penalty'] = sparseness_penalty
+        self.hyperparameters['pt_dropout'] = pt_dropout
+        self.hyperparameters['ft_dropout'] = ft_dropout
+        self.hyperparameters['input_act'] = input_act
+        self.hyperparameters['internal_act'] = internal_act
+        self.hyperparameters['output_act'] = output_act
 
         self.data = mx.symbol.Variable('data')
         for i in range(self.N):
@@ -167,7 +179,7 @@ class AutoEncoderModel(model.MXModel):
         solver = Solver(optimizer, momentum=0.9, wd=decay, learning_rate=l_rate,
                         lr_scheduler=lr_scheduler)
         solver.set_metric(mx.metric.CustomMetric(l2_norm))
-        solver.set_monitor(Monitor(print_every))
+        solver.set_monitor(Monitor(print_every, hyperparameters=self.hyperparameters))
         data_iter = mx.io.NDArrayIter({'data': X}, batch_size=batch_size, shuffle=True,
                                       last_batch_handle='roll_over')
         for i in range(self.N):
@@ -175,7 +187,7 @@ class AutoEncoderModel(model.MXModel):
                 data_iter_i = data_iter
             else:
                 X_i = list(model.extract_feature(
-                    self.internals[i-1], self.args, self.auxs, data_iter, X.shape[0],
+                    self.internals[i-1], self.args, self.auxs, data_iter, len(X),
                     self.xpu).values())[0]
                 data_iter_i = mx.io.NDArrayIter({'data': X_i}, batch_size=batch_size,
                                                 last_batch_handle='roll_over')
@@ -190,7 +202,7 @@ class AutoEncoderModel(model.MXModel):
         solver = Solver(optimizer, momentum=0.9, wd=decay, learning_rate=l_rate,
                         lr_scheduler=lr_scheduler)
         solver.set_metric(mx.metric.CustomMetric(l2_norm))
-        solver.set_monitor(Monitor(print_every))
+        solver.set_monitor(Monitor(print_every, hyperparameters=self.hyperparameters))
         data_iter = mx.io.NDArrayIter({'data': X}, batch_size=batch_size, shuffle=True,
                                       last_batch_handle='roll_over')
         logging.info('Fine tuning...')
@@ -198,9 +210,8 @@ class AutoEncoderModel(model.MXModel):
                      0, n_iter, {}, False)
 
     def eval(self, X):
-        batch_size = 100
-        data_iter = mx.io.NDArrayIter({'data': X}, batch_size=batch_size, shuffle=False,
+        data_iter = mx.io.NDArrayIter({'data': X}, batch_size=self.eval_batch_size, shuffle=False,
                                       last_batch_handle='pad')
         Y = list(model.extract_feature(
-            self.loss, self.args, self.auxs, data_iter, X.shape[0], self.xpu).values())[0]
+            self.loss, self.args, self.auxs, data_iter, len(X), self.xpu).values())[0]
         return np.mean(np.square(Y-X))/2.0
