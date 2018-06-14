@@ -9,6 +9,26 @@ import sys
 from queue import Queue
 import numpy as np
 
+def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
+	dim = None
+	(h, w) = image.shape[:2]
+
+	if width is None and height is None:
+			return image
+
+	if width is None:
+			r = height / float(h)
+			dim = (int(w * r), height)
+
+	else:
+			r = width / float(w)
+			dim = (width, int(h * r))
+
+	resized = cv2.resize(image, dim, interpolation=inter)
+
+	# return the resized image
+	return (dim, resized)
+
 class FileVideoStream:
 	def __init__(self, path, queueSize=128):
 		self.stream = cv2.VideoCapture(path)
@@ -55,7 +75,6 @@ ap.add_argument("-max", "--max-area", type=int, default=int(15000 * scale * scal
 ap.add_argument("-maxWidth", "--max-width", type=int, default=int(500 * scale), help="minimum area size")
 ap.add_argument("-maxHeight", "--max-height", type=int, default=int(500 * scale), help="minimum area size")
 
-
 ap.add_argument("-left", "--left", type=int, default=int(400 * scale), help="minimum area size")
 ap.add_argument("-right", "--right", type=int, default=int(800 * scale), help="minimum area size")
 ap.add_argument("-top", "--top", type=int, default=int(250 * scale), help="minimum area size")
@@ -82,7 +101,7 @@ while True:
 	frameNumber = frameNumber + 1
 	src = fvs.read()
 
-	frame = imutils.resize(src, width=int(1200 * scale))
+	(size, frame) = resize(src, width=int(1200 * scale))
 	gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)	
 
 	blur = int(41 * scale)
@@ -137,7 +156,7 @@ while True:
 		# compute the bounding box for the contour, draw it on the frame,
 		# and update the text
 		(x, y, w, h) = cv2.boundingRect(c)
-		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
 		chosen = (x, y, w, h)
 
 	if ((frameNumber % 25) == 0):
