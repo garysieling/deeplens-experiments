@@ -1,33 +1,45 @@
+
+import cv2
+
+
 # import the necessary packages
 import argparse
 import datetime
 import imutils
 import time
-import cv2
+
 from threading import Thread
 import sys
 from queue import Queue
 import numpy as np
+
+import matplotlib.pyplot as plt
+
+import mxnet as mx
+from mxnet.gluon.data.vision import transforms
+from gluoncv import utils
+from gluoncv.model_zoo import get_model
 
 def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
 	dim = None
 	(h, w) = image.shape[:2]
 
 	if width is None and height is None:
-			return image
+		return image
 
+	r = 1.0
 	if width is None:
-			r = height / float(h)
-			dim = (int(w * r), height)
+		r = height / float(h)
+		dim = (int(w * r), height)
 
 	else:
-			r = width / float(w)
-			dim = (width, int(h * r))
+		r = width / float(w)
+		dim = (width, int(h * r))
 
 	resized = cv2.resize(image, dim, interpolation=inter)
 
 	# return the resized image
-	return (dim, resized)
+	return (r, resized)
 
 class FileVideoStream:
 	def __init__(self, path, queueSize=128):
@@ -65,7 +77,7 @@ class FileVideoStream:
 	def stop(self):
 		self.stopped = True
 
-scale = 0.75
+scale = 1
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -94,6 +106,17 @@ frameNumber = 0
 
 start = time.clock()
 
+lastSighting = None
+
+net = get_model('cifar_resnet110_v1', classes=10, pretrained=True)
+
+transform_fn = transforms.Compose([
+	transforms.Resize(32),
+	transforms.CenterCrop(32),
+	transforms.ToTensor(),
+	transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])
+])
+
 while True:
 	if (not fvs.more):
 		continue
@@ -101,7 +124,7 @@ while True:
 	frameNumber = frameNumber + 1
 	src = fvs.read()
 
-	(size, frame) = resize(src, width=int(1200 * scale))
+	(imageScale, frame) = resize(src, width=int(1200 * scale))
 	gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)	
 
 	blur = int(41 * scale)
@@ -119,11 +142,12 @@ while True:
 	thresh = cv2.threshold(frameDelta, 5, 255, cv2.THRESH_BINARY)[1]
  
 	thresh = cv2.dilate(thresh, None, iterations=2)
-	(image, contours, hierarchy) = cv2.findContours(thresh.copy(), cv2.RETR_TREE , cv2.CHAIN_APPROX_SIMPLE)
+	(image, contours, hierarchy) = cv2.findContours(thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
  
 	glitched = False
 
 	chosen = None
+
 	for c in contours:
 		x,y,w,h = cv2.boundingRect(c)
 
@@ -159,6 +183,52 @@ while True:
 		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
 		chosen = (x, y, w, h)
 
+		(xSmall, ySmall, wSmall, hSmall) = chosen
+		print(chosen)
+
+		# what were these in the original?
+		xBig = round(xSmall / imageScale)
+		yBig = round(ySmall / imageScale)
+		wBig = round(wSmall / imageScale)
+		hBig = round(hSmall / imageScale)
+	
+		cropped = src[yBig:yBig+hBig, xBig:xBig+wBig]
+		#print("A: " + str(cropped.shape))
+		typed = mx.nd.array(cropped)
+		#print("B: " + str(typed.shape))
+		transformed = transform_fn(typed)
+		#print("C: " + str(transformed.shape))
+
+		tryMe = mx.nd.expand_dims(
+				transformed, 
+				axis=0)
+
+		#print(tryMe.shape)
+
+		pred = net(tryMe)
+		#print("pred")
+		#print(pred)
+
+		# cv2 to mxnet image
+
+		# _cvimresize
+		# Argument src must have NDArray type, but got
+		#rightType = mxnet.image.imdecode(tryMe)
+		#https://github.com/apache/incubator-mxnet/issues/8569
+		# conda remove opencv3
+		#reshaped = mx.nd.array(transformed)
+		#print(reshaped)
+
+		#perative_utils.h:108: Check failed: infershape[attrs.op](attrs, &in_shapes, &out_shapes)
+		#
+		class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
+               'dog', 'frog', 'horse', 'ship', 'truck']
+		
+		ind = mx.nd.argmax(pred, axis=1).astype('int')
+		print('The input picture is classified as [%s], with probability %.3f.'%
+				(class_names[ind.asscalar()], mx.nd.softmax(pred)[0][ind].asscalar()))
+
+
 	if ((frameNumber % 25) == 0):
 		firstFrame = gray
 
@@ -166,10 +236,16 @@ while True:
 		continue
 
 	if (chosen != None):
-		(x, y, w, h) = chosen
+		(xSmall, ySmall, wSmall, hSmall) = chosen
 		print(chosen)
+
+		# what were these in the original?
+		xBig = round(xSmall / imageScale)
+		yBig = round(ySmall / imageScale)
+		wBig = round(wSmall / imageScale)
+		hBig = round(hSmall / imageScale)
 	
-		frame[0:h, 0:w] = frame[y:y+h, x:x+w]
+		frame[0:hBig, 0:wBig] = src[yBig:yBig+hBig, xBig:xBig+wBig]
 
 		#small_image.copyTo(frame(x, y, w, h))
 		#crop_img = frame[y:y+h, x:x+w]
